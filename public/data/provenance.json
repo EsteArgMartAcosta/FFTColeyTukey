@@ -1,0 +1,15 @@
+{
+  "active_results": "results.json",
+  "active_status": "reproduced",
+  "active_created_utc": "2026-11-07T14:29:15.584319+00:00",
+  "source_sha256": "5134e5b7860b6c0c9e9700c36b40a9d60bb3b05d49d8f711e0f283591c3604b1",
+  "historical_results": "results-historical-20260926.json",
+  "historical_status": "archived_without_modification",
+  "historical_created_utc": "2026-09-26T06:42:53.253254+00:00",
+  "historical_sha256": "ad9ef5ec454001e52524873edcd4d0b9f27a75b4ef245c9868d36edf6d98cff1",
+  "python_tests": {
+    "passed": 30,
+    "command": "cd experiments && python -m pytest -q"
+  },
+  "note": "No se mezclan muestras de las dos ejecuciones. Los tiempos del navegador son otro experimento."
+}

@@ -1,0 +1,6 @@
+{
+  "name": "fft-atlas-impa", "private": true, "version": "1.0.0", "type": "module",
+  "scripts": {"dev": "vite --host 0.0.0.0", "build": "tsc --noEmit && vite build", "test": "node --experimental-strip-types --test tests/*.test.ts", "preview": "vite preview --host 0.0.0.0"},
+  "dependencies": {"katex": "0.16.22", "@fontsource/instrument-serif": "5.2.8", "@fontsource-variable/manrope": "5.2.8"},
+  "devDependencies": {"vite": "^7.3.0", "typescript": "~5.9.3", "@types/katex": "^0.16.7", "@types/node": "^24.0.0"}
+}
