@@ -27,6 +27,8 @@ export function installProofLens() {
   document.addEventListener('pointerover',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-proof]');if(target){clearTimeout(timer);if(!pinned)timer=window.setTimeout(()=>open(target.dataset.proof!,false,target),260);}});
   document.addEventListener('pointerout',e=>{if((e.target as Element).closest('[data-proof]')&&!(e.relatedTarget instanceof Node&&lens.contains(e.relatedTarget)))schedule();});
   document.addEventListener('focusin',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-proof]');if(target&&!pinned&&!suppressFocus)open(target.dataset.proof!,false,target);});
+  document.addEventListener('pointerdown',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-proof]');if(target)open(target.dataset.proof!,true,target);},true);
+  lens.addEventListener('pointerdown',e=>{if(!pinned&&!(e.target as Element).closest('button,a,select,input')){clearTimeout(timer);pinned=true;sync();}});
   document.addEventListener('click',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-proof]');if(target){e.preventDefault();open(target.dataset.proof!,true,target);}});
   lens.addEventListener('pointerenter',()=>clearTimeout(timer));lens.addEventListener('pointerleave',schedule);
   document.addEventListener('keydown',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-proof]');if(target&&target.tagName!=='BUTTON'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open(target.dataset.proof!,true,target);}if(e.key==='Escape'&&!lens.hidden){e.stopPropagation();close();returnFocus();}});
