@@ -1,78 +1,95 @@
-# Experimentos reproducibles de FFT ATLAS
+# Reproducible experiments for FFT Atlas
 
-Los resultados de `public/data/results.json` proceden de una ejecución real del programa incluido en `experiments/experiments.py`. El archivo conserva fecha UTC, CPU, versiones, semilla, configuración de hilos, muestras de tiempo y hash SHA-256 del programa. Las cifras describen este entorno concreto.
+The measurements in `public/data/results.json` come from an actual run of `experiments/experiments.py`. The file records UTC timestamps, CPU, package versions, random seed, thread configuration, timing samples, and the SHA-256 hash of the executed program. These values describe that specific environment.
 
-## Reproducir desde el repositorio
+The expanded research campaign is documented separately in [EXTENDED_STUDY.md](EXTENDED_STUDY.md). Its data are kept in a separate file so that the original protocols and measurements remain identifiable.
 
-En Python 3.12, preferiblemente dentro de un entorno virtual:
+## Reproduce the original campaign
+
+Use Python 3.12, preferably in a virtual environment:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r experiments/requirements.txt
-(cd experiments && python -m pytest -q)
+python -m pytest experiments/tests -q
 python experiments/experiments.py --output public/data
 ```
 
-En Windows, activar el entorno con `.venv\Scripts\activate` y ejecutar las pruebas después de entrar en `experiments`. El archivo descargable `experiments.py` también acepta `--output data` para uso fuera del repositorio.
+On Windows, activate the environment with `.venv\Scripts\activate`. The downloadable `experiments.py` also accepts `--output data` when used outside this repository.
 
-El JSON tiene las secciones `metadata`, `timings`, `accuracy`, `convolution` y `poisson`. Los CSV permiten consultar datos sin ejecutar la web. Los tiempos nuevos variarán con el procesador, la carga, el sistema y las bibliotecas; reproducir el protocolo no implica reproducir cada tiempo de reloj.
+The JSON contains `metadata`, `timings`, `accuracy`, `convolution`, and `poisson`. CSV exports support inspection without running the website. Fresh timings vary with processor, system load, operating system, and numerical libraries. Reproducing a protocol does not mean reproducing every wall-clock measurement.
 
-## Convención de Fourier
+## Fourier convention
 
-Se usa $X_k=\sum_{n=0}^{N-1}x_n e^{-2\pi i nk/N}$, sin normalizar la transformación directa. La inversa lleva el factor $1/N$. Todas las comparaciones usan esta convención.
+The forward transform is
 
-## Tiempo: comparar implementaciones con un alcance explícito
+$$
+X_k=\sum_{n=0}^{N-1}x_n e^{-2\pi i nk/N},
+$$
 
-Para $N=64,128,256,512,1024,2048$ se transforman señales gaussianas complejas de precisión doble. Se comparan:
+with no forward normalization. The inverse includes a factor of $1/N$. Every comparison uses this convention.
 
-1. Producto por una matriz DFT densa previamente construida.
-2. FFT radix-2 DIT compilada con Numba y `fastmath=False`.
-3. `scipy.fft.fft`, con `workers=1`.
+## Timing: compare implementations with a declared scope
 
-Se fijan los grupos BLAS y OpenMP a un hilo, se calienta cada método y se realizan nueve lotes en orden aleatorio. Cada muestra es el tiempo medio por llamada dentro de un lote. Se publican todas las muestras, mediana y cuartiles; el intervalo intercuartílico es descriptivo y no constituye un intervalo de confianza.
+For $N=64,128,256,512,1024,2048$, double-precision complex Gaussian signals are transformed by:
 
-La compilación, la creación de la matriz y la planificación radix-2 quedan fuera del tiempo de ejecución. La construcción de matriz y del plan se registra por separado como una sola observación. Se incluye la asignación de la salida. El coste de almacenamiento de la matriz es $16N^2$ bytes para `complex128`.
+1. Multiplication by a precomputed dense DFT matrix.
+2. A radix-2 decimation-in-time FFT compiled with Numba and `fastmath=False`.
+3. `scipy.fft.fft`, with `workers=1`.
 
-Las curvas de tiempo no prueban la complejidad asintótica: esa conclusión se obtiene del conteo de operaciones. Tampoco permiten atribuir toda diferencia observada al orden asintótico, porque las implementaciones tienen constantes y estrategias distintas.
+BLAS and OpenMP thread pools are limited to one thread. Each method is warmed up, and nine batches run in randomized order. Each timing sample is the average time per call within one batch. All samples, medians, and quartiles are retained. The interquartile range is descriptive; it is not a confidence interval.
 
-## Precisión: referencia independiente
+Compilation, matrix construction, and radix-2 planning are outside the execution timing. Matrix and plan construction are recorded separately as single observations. Output allocation is included. The dense matrix requires $16N^2$ bytes with `complex128` entries.
 
-Para $N=16,32,64,128,256$ se generan tres señales gaussianas complejas por tamaño y se calcula una DFT directa con 80 dígitos decimales mediante mpmath. La señal se redondea primero a `complex64` o `complex128`; la referencia recibe exactamente los valores representables resultantes. Así se estudia el error del algoritmo sin mezclarlo con la cuantización inicial del dato.
+Timing curves do not prove asymptotic complexity; operation counts establish that result. Observed timing differences also reflect different constants and implementation strategies, so they cannot be attributed entirely to asymptotic order.
 
-Se mide $\|\widetilde X-X_{\rm ref}\|_2/\|X_{\rm ref}\|_2$. Para el dato nulo se define la discrepancia como cero si ambos vectores son nulos; un resultado no nulo frente a referencia nula tiene error relativo infinito.
+## Accuracy: an independent reference
 
-En precisión simple, la implementación por etapas utiliza almacenamiento y factores de giro `complex64`; se comprueba explícitamente que SciPy conserva ese tipo. En precisión doble se comparan radix-2, SciPy y DFT densa. La precisión de la referencia se verifica además contra 110 dígitos en un caso pequeño.
+For $N=16,32,64,128,256$, three complex Gaussian signals are generated per size. An independent direct DFT is evaluated with 80 decimal digits in mpmath. The signal is first rounded to `complex64` or `complex128`; the reference receives exactly the resulting representable values. This separates algorithmic error from initial input quantization.
 
-Tres señales no caracterizan el peor caso ni establecen una ley estadística universal. La matriz $F_N/\sqrt N$ es unitaria, pero el buen condicionamiento normativo no garantiza error relativo pequeño en cada coeficiente casi nulo. La ida y vuelta FFT–IFFT se usa como comprobación adicional, no como referencia independiente.
+The error metric is
 
-## Longitudes: la misma convolución lineal
+$$
+\varepsilon_{\mathrm{rel}}
+=\frac{\|\widetilde X-X_{\mathrm{ref}}\|_2}{\|X_{\mathrm{ref}}\|_2}.
+$$
 
-Dos vectores de 30 000 entradas producen 59 999 coeficientes. El programa compara la longitud mínima, `scipy.fft.next_fast_len(59999)` y la siguiente potencia de dos. Todas las salidas se recortan a la misma convolución lineal.
+For a zero reference, discrepancy is zero when both vectors vanish and infinite when the computed result is nonzero.
 
-El acuerdo entre esas salidas es una prueba de consistencia entre cálculos en doble precisión; no es un error frente a una solución exacta. Una prueba adicional contrasta convoluciones pequeñas con la suma directa `numpy.convolve`. Rellenar con ceros una señal cambia la DFT y su malla de frecuencias: lo que aquí se preserva es la convolución lineal recortada.
+The single-precision stage implementation uses `complex64` storage and twiddle factors; an explicit test checks that SciPy retains that type. Double-precision comparisons include radix-2, SciPy, and the dense DFT. One small case also compares 80-digit and 110-digit reference calculations.
 
-## Poisson periódico: residual y discretización
+Three signals do not characterize worst-case behavior or establish a universal statistical law. Although $F_N/\sqrt N$ is unitary, good normwise conditioning does not guarantee a small relative error in each nearly zero coefficient. An FFT–IFFT round trip provides an additional consistency check, not an independent reference.
 
-Se resuelve $-\Delta u=f$ en $[0,2\pi)^2$ con media cero y solución fabricada
+## Length effects: preserve the same linear convolution
+
+Two vectors of length 30,000 produce 59,999 linear-convolution coefficients. The program compares the minimum length, `scipy.fft.next_fast_len(59999)`, and the next power of two. Every result is cropped to the same linear convolution.
+
+Agreement between these results is a consistency check between double-precision computations, not error against exact arithmetic. A separate test compares small convolutions with the direct sum from `numpy.convolve`. Zero-padding a signal changes its DFT and frequency grid; the preserved object here is the cropped linear convolution.
+
+## Periodic Poisson: residual versus discretization error
+
+The equation $-\Delta u=f$ is solved on $[0,2\pi)^2$, with zero mean and the manufactured solution
 
 $$
 u(x,y)=\sin(3x)\cos(2y)+\tfrac14\cos(5x),\qquad
 f(x,y)=13\sin(3x)\cos(2y)+\tfrac{25}{4}\cos(5x).
 $$
 
-La comparación usa mallas $N=16,32,64,128$. El operador espectral tiene símbolo $k^2+\ell^2$; el operador de cinco puntos tiene símbolo
+The grids have $N=16,32,64,128$ points in each direction. The spectral operator has symbol $k^2+\ell^2$. The periodic five-point operator has symbol
 
 $$
-\lambda_h(k,\ell)=\frac4{h^2}\left(\sin^2\frac{\pi k}{N}+\sin^2\frac{\pi\ell}{N}\right),\qquad h=2\pi/N.
+\lambda_h(k,\ell)=\frac4{h^2}
+\left(\sin^2\frac{\pi k}{N}+\sin^2\frac{\pi\ell}{N}\right),
+\qquad h=\frac{2\pi}{N}.
 $$
 
-El modo cero se fija a cero. El residual de diferencias finitas se evalúa aplicando el stencil en espacio físico, de manera independiente de la división modal. El residual espectral se evalúa volviendo a transformar la solución y aplicando su multiplicador.
+The zero solution mode is fixed to zero. The finite-difference residual is checked by applying the stencil in physical space, independently of the modal division. The spectral residual is checked by transforming the solution again and applying the spectral multiplier.
 
-Se informa por separado el error frente a la solución analítica y el residual del sistema elegido. Esta solución es un polinomio trigonométrico completamente resuelto en todas las mallas: el método espectral llega a redondeo y este ejemplo no demuestra una tasa general de convergencia espectral. En diferencias finitas se espera orden dos, observable al reducir aproximadamente por cuatro el error al duplicar $N$.
+The error against the analytical solution and the residual of the chosen discrete system are reported separately. This manufactured solution is a trigonometric polynomial resolved on every grid in the experiment. The spectral method therefore reaches roundoff; this example does not establish a general spectral convergence rate. For finite differences, second-order convergence is expected: doubling $N$ should approximately divide the error by four.
 
-## Datos históricos
+## Historical data and browser computations
 
-`results-historical-20260926.json` conserva intactos los resultados del prototipo del 26 de septiembre de 2026. Es un archivo de procedencia histórica. El sitio principal utiliza la nueva ejecución en `results.json`; no combina silenciosamente mediciones de los dos entornos.
+`results-historical-20260926.json` retains the prototype results from September 26, 2026. It is a historical provenance record. The original evidence laboratory reads the new run in `results.json`; measurements from the two environments are not silently combined.
 
-La web ejecuta por separado sus pequeños laboratorios JavaScript. Sus tiempos dependen del navegador y no deben mezclarse con los tiempos Python almacenados.
+The website also runs small JavaScript laboratories locally. Their timings depend on the browser and must not be pooled with the stored Python measurements.

@@ -175,3 +175,18 @@ test('smooth source supplies nontrivial spectral convergence and dipole never in
   assert.throws(() => poisson2D(8, 'spectral', 'manufactured'), RangeError);
   assert.throws(() => poisson2D(24, 'spectral', 'manufactured'), RangeError);
 });
+
+
+test('Fourier products give independently summed convolution, including exact wrap-around',()=>{
+ const a=[2,-1,3,0,4],b=[1,2,-3,1];
+ const linear=Array(a.length+b.length-1).fill(0);
+ for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)linear[i+j]+=a[i]*b[j];
+ for(const L of [8,16]){
+  const A=fft(Array.from({length:L},(_,i)=>complex(a[i]??0)));
+  const B=fft(Array.from({length:L},(_,i)=>complex(b[i]??0)));
+  closeVector(fft(A.map((z,i)=>mul(z,B[i])),true),Array.from({length:L},(_,i)=>complex(linear[i]??0)));
+ }
+ const L=4,fold=(xs:number[])=>Array.from({length:L},(_,k)=>complex(xs.reduce((s,x,i)=>s+(i%L===k?x:0),0)));
+ const A=fft(fold(a)),B=fft(fold(b));
+ closeVector(fft(A.map((z,i)=>mul(z,B[i])),true),fold(linear));
+});

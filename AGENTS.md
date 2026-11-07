@@ -3,7 +3,7 @@
 Academic interactive website for Cooley–Tukey, Numerical Analysis, IMPA.
 
 ## Invariants
-- Spanish prose; mathematics rendered with KaTeX. Forward DFT sign is negative; inverse includes 1/N.
+- English prose (user requirement updated 2026-11-07); mathematics rendered with KaTeX. Forward DFT sign is negative; inverse includes 1/N.
 - src/math.ts is the numerical core. Stage diagrams consume fftTrace from the same FFT kernel.
 - Distinguish theorem, intuition, computed observation and limitation. Never invent benchmark results.
 - Preserve Poisson periodic compatibility and explain changes to the source from mean projection.

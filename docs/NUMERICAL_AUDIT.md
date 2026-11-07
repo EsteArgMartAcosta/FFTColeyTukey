@@ -1,48 +1,50 @@
-# Auditoría numérica: ejecución del 7 de noviembre de 2026
+# Numerical audit: November 7, 2026
 
-## Alcance comprobado
+## Verified scope
 
-Se inspeccionó el paquete del prototipo y se reutilizó su protocolo experimental. Se ejecutaron de nuevo los experimentos Python y 30 pruebas numéricas; todas las pruebas finalizaron correctamente. Esta auditoría no sustituye la validación independiente del núcleo TypeScript ni las pruebas de interfaz del sitio.
+The prototype package was inspected and its experimental protocol reused. The Python experiments and 30 numerical tests were run again; all 30 passed. This audit does not replace independent validation of the TypeScript core or browser interface tests.
 
-La nueva ejecución empezó a las 14:29:15 UTC y terminó a las 14:29:22 UTC. Entorno: Linux x86-64, Intel Xeon Platinum 8573C, Python 3.12.14, NumPy 2.3.5, SciPy 1.17.0, Numba 0.65.1, mpmath 1.3.0 y BLAS con un hilo. El JSON conserva el detalle completo.
+The original new run started at 14:29:15 UTC and ended at 14:29:22 UTC. Environment: Linux x86-64, Intel Xeon Platinum 8573C, Python 3.12.14, NumPy 2.3.5, SciPy 1.17.0, Numba 0.65.1, mpmath 1.3.0, and one BLAS thread. Full details remain in the JSON.
 
-## Cambios introducidos respecto del paquete histórico
+The later expanded campaign has its own protocol and provenance in [EXTENDED_STUDY.md](EXTENDED_STUDY.md). The numerical observations below refer specifically to the original `results.json` campaign.
 
-- La referencia de precisión documenta la conversión exacta del dato binario ya representable; distingue error del algoritmo de redondeo de entrada.
-- Se comprueba que las rutas de precisión simple mantienen `complex64` y que la radix-2 doble devuelve `complex128`.
-- Se define el caso de referencia nula en la medida de error.
-- Se registra el hash SHA-256 del script, versión del protocolo y fecha de finalización.
-- Se añadieron pruebas de desplazamiento circular y modo complejo puro, comparación de referencias de 80 y 110 dígitos, conservación del tipo simple y dato nulo.
-- El archivo de resultados de septiembre se preservó byte a byte, separado de la ejecución activa.
+## Changes relative to the historical package
 
-## Evidencia obtenida
+- The accuracy reference now documents the exact conversion of an already representable binary input, distinguishing algorithmic error from input rounding.
+- Tests check that single-precision paths retain `complex64` and that double-precision radix-2 returns `complex128`.
+- The error metric defines the zero-reference case explicitly.
+- The program hash, protocol version, and completion timestamp are recorded.
+- Additional tests cover circular shifts, pure complex modes, 80-digit versus 110-digit references, preservation of the single-precision type, and zero input.
+- The September result file was preserved byte for byte and separated from the active run.
 
-Las pruebas incluyen acuerdo con SciPy hasta $N=1024$, impulso, señal constante, Parseval, inversión, tamaños inválidos, referencia independiente de alta precisión, convolución lineal y Poisson periódico.
+## Observed evidence
 
-En $N=256$, para las tres señales de precisión doble, la mediana del error normativo relativo de radix-2 fue $3.3433\times10^{-16}$. Para la implementación por etapas en precisión simple fue $1.0407\times10^{-7}$. Son observaciones del conjunto de prueba, no cotas universales de estabilidad.
+The tests include agreement with SciPy through $N=1024$, impulses, constant signals, Parseval, inversion, invalid sizes, independent high-precision references, linear convolution, and periodic Poisson.
 
-En Poisson con $N=128$, el operador de diferencias finitas produjo error relativo de solución $2.1945\times10^{-3}$ y residual relativo $1.4868\times10^{-14}$. El descenso del error al refinar es compatible con orden dos. Esto ilustra la separación entre resolver bien el sistema discreto y aproximar bien el problema continuo.
+At $N=256$, the median relative normwise error of radix-2 across three double-precision signals was $3.3433\times10^{-16}$. For the single-precision stage implementation it was $1.0407\times10^{-7}$. These are observations on the tested signals, not universal stability bounds.
 
-La convolución de dos vectores de 30 000 entradas produjo estas medianas descriptivas:
+For Poisson at $N=128$, the finite-difference operator produced relative solution error $2.1945\times10^{-3}$ and relative residual $1.4868\times10^{-14}$. Error reduction under refinement is consistent with second order. This separates accurately solving the discrete system from accurately approximating the continuous problem.
 
-| Longitud de FFT | Tiempo por convolución |
+Convolution of two vectors with 30,000 entries produced these descriptive medians:
+
+| FFT length | Time per convolution |
 |---:|---:|
-| 59 999 | 13.7939 ms |
-| 60 000 | 2.7924 ms |
-| 65 536 | 3.1493 ms |
+| 59,999 | 13.7939 ms |
+| 60,000 | 2.7924 ms |
+| 65,536 | 3.1493 ms |
 
-Las tres rutas calculan la misma convolución lineal recortada. La razón de tiempos cambia entre ejecuciones y equipos; no debe trasladarse a otro entorno como una constante.
+All three paths compute the same cropped linear convolution. Timing ratios change between runs and machines; they should not be transferred to another environment as constants.
 
-## Límites de la evidencia
+## Limits of the evidence
 
-La máquina es un contenedor compartido, sin aislamiento de frecuencia o carga. Hay nueve lotes de tiempo y tres señales por estudio de precisión. Los cuartiles no son intervalos de confianza. No se midió GPU ni precisión mixta acelerada por hardware.
+The machine is a shared container without isolated clock frequency or system load. The original campaign uses nine timing batches and three signals per accuracy study. Quartiles are not confidence intervals. GPU execution and hardware-accelerated mixed precision were not measured.
 
-El polinomio trigonométrico de Poisson está completamente resuelto por todas las mallas del experimento. El error espectral cercano al redondeo valida este caso; no establece una tasa de convergencia para toda fuente suave.
+The Poisson trigonometric polynomial is resolved on every tested grid. Spectral error near roundoff validates this example, but does not establish a convergence rate for every smooth source.
 
-La construcción de la DFT densa y el plan radix-2 se registra como observación individual y se excluye del tiempo del kernel. El sitio debe conservar esa explicación cuando muestre las curvas.
+Dense DFT construction and radix-2 planning are recorded as single observations and excluded from kernel timing. Any display of the timing curves must retain this scope explanation.
 
-## Procedencia y repetición
+## Provenance and reproduction
 
-`public/data/provenance.json` identifica la ejecución activa y el archivo histórico. `public/data/results.json` contiene las muestras y metadatos; `timings.csv`, `accuracy.csv` y `poisson.csv` contienen los datos tabulares. Las instrucciones exactas están en `docs/EXPERIMENTS.md`.
+`public/data/provenance.json` identifies the active and historical runs. `public/data/results.json` contains raw samples and metadata; `timings.csv`, `accuracy.csv`, and `poisson.csv` provide tables. Reproduction instructions are in [EXPERIMENTS.md](EXPERIMENTS.md).
 
-El hash registrado de `experiments/experiments.py` coincide con el archivo ejecutado y con su copia descargable. El archivo histórico coincide byte a byte con el original recuperado.
+The recorded hash of `experiments/experiments.py` matches the executed program and its downloadable copy. The historical file matches the recovered original byte for byte.

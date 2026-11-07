@@ -15,15 +15,15 @@ const copy = (z: Complex): Complex => complex(z.re, z.im);
 const root = (angle: number): Complex => complex(Math.cos(angle), Math.sin(angle));
 
 function validateInput(input: readonly Complex[]): void {
-  if (!input.length) throw new RangeError('La transformada requiere al menos una muestra.');
+  if (!input.length) throw new RangeError('The transform requires at least one sample.');
   if (input.some(z => !Number.isFinite(z.re) || !Number.isFinite(z.im))) {
-    throw new RangeError('Las muestras deben tener partes reales e imaginarias finitas.');
+    throw new RangeError('Samples must have finite real and imaginary parts.');
   }
 }
 
 function requirePowerOfTwo(n: number): void {
   if (!Number.isSafeInteger(n) || n < 1 || !Number.isInteger(Math.log2(n))) {
-    throw new RangeError('Radix-2 requiere una longitud que sea potencia de dos.');
+    throw new RangeError('Radix-2 requires a power-of-two length.');
   }
 }
 
@@ -132,7 +132,7 @@ export type MixedRadixResult = {
 export function mixedRadix(input: readonly Complex[], n1: number, n2: number): MixedRadixResult {
   validateInput(input);
   if (!Number.isSafeInteger(n1) || !Number.isSafeInteger(n2) || n1 < 1 || n2 < 1 || n1 * n2 !== input.length) {
-    throw new RangeError('Los factores deben ser enteros positivos cuyo producto sea N.');
+    throw new RangeError('The factors must be positive integers whose product is N.');
   }
   const n = input.length;
   const first = Array.from({ length: n1 }, (_, a) => dft(Array.from({ length: n2 }, (_, b) => input[a + n1 * b])));
@@ -147,7 +147,7 @@ export function mixedRadix(input: readonly Complex[], n1: number, n2: number): M
 
 /** Relative Euclidean error. For zero reference: 0 if equal, Infinity otherwise. */
 export function relativeError(actual: readonly (Complex | number)[], reference: readonly (Complex | number)[]): number {
-  if (actual.length !== reference.length) throw new RangeError('Las longitudes no coinciden.');
+  if (actual.length !== reference.length) throw new RangeError('The lengths do not match.');
   let numerator = 0, denominator = 0;
   for (let i = 0; i < actual.length; i++) {
     const a = typeof actual[i] === 'number' ? complex(actual[i] as number) : actual[i] as Complex;
@@ -201,10 +201,10 @@ export function poisson2D(
   project = true,
 ): PoissonResult {
   requirePowerOfTwo(n);
-  if (n < 16) throw new RangeError('La malla debe tener N >= 16 para resolver el ejemplo fabricado.');
-  if (operator !== 'spectral' && operator !== 'fd') throw new RangeError('Operador desconocido.');
-  if (!['manufactured', 'smooth', 'dipole'].includes(kind)) throw new RangeError('Fuente desconocida.');
-  if (!Number.isFinite(offset)) throw new RangeError('El desplazamiento debe ser finito.');
+  if (n < 16) throw new RangeError('The grid requires N >= 16 to resolve the manufactured example.');
+  if (operator !== 'spectral' && operator !== 'fd') throw new RangeError('Unknown operator.');
+  if (!['manufactured', 'smooth', 'dipole'].includes(kind)) throw new RangeError('Unknown source.');
+  if (!Number.isFinite(offset)) throw new RangeError('The offset must be finite.');
   const raw: number[] = [], exact: number[] | null = kind === 'dipole' ? null : [];
   const periodicDistance = (a: number, b: number) => Math.min(Math.abs(a - b), TAU - Math.abs(a - b));
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {

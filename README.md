@@ -1,28 +1,30 @@
 # FFT Atlas · Cooley–Tukey
 
-Un sitio académico interactivo para una exposición de Análisis Numérico en el IMPA. Nueve capítulos conectan la estructura algebraica de la DFT, la factorización Cooley–Tukey, la implementación, la precisión numérica y Poisson periódico.
+An interactive academic website for a Numerical Analysis presentation at IMPA. Nine chapters connect the algebraic structure of the DFT, Cooley–Tukey factorization, implementation, floating-point behavior, and periodic Poisson equations.
 
-**Sitio:** https://EsteArgMartAcosta.github.io/FFTColeyTukey/
+**Website:** https://esteargmartacosta.github.io/FFTColeyTukey/
 
-## Explorar, estudiar, exponer
+## Explore, study, present
 
-- **Explorar:** laboratorios con parámetros, valores e índices calculados en vivo.
-- **Estudiar:** demostraciones completas y preguntas de defensa.
-- **Exponer:** recorrido de 55 minutos con los laboratorios en primer plano; 5 minutos adicionales para preguntas.
-- **Mapa:** conceptos navegables, dependencias y bibliografía primaria.
+- **Explore:** laboratories with parameters, values, and indices computed live.
+- **Study:** complete derivations, floating mathematical explanations, and questions to prepare for discussion.
+- **Present:** a 55-minute route, with five additional minutes for questions.
+- **Concept map:** 22 draggable concepts, animated connections, zoom, category filters, search, and four inspector views.
+- **Mathematical dossier:** 16 detailed proofs opened on hover or focus; click to pin, expand, or switch derivations.
+- **Research dashboard:** four recorded studies and two live laboratories, inspectable charts, descriptive variation bands, and downloadable observations.
 
-Los laboratorios incluyen raíces y ortogonalidad, una factorización general con factores no necesariamente coprimos, ejecución radix-2 por etapas, aliasing y fuga espectral, tiempos y precisión medidos, dos discretizaciones de Poisson y una cota entrópica en un modelo restringido.
+The laboratories include roots of unity and orthogonality, general factorization without a coprimality requirement, stage-by-stage radix-2, aliasing and spectral leakage, measured runtime and accuracy, two Poisson discretizations, and an entropy lower bound in a restricted model. The extended numerical campaign adds separate reproducible evidence with its own protocol and provenance.
 
-## Ejecutar localmente
+## Run locally
 
-Requiere Node.js 24 y npm.
+Requires Node.js 24 and npm.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abrir la dirección que imprime Vite, con la ruta `/FFTColeyTukey/`. Para construir y comprobar la versión de producción:
+Open the address printed by Vite with the path `/FFTColeyTukey/`. To check and build the production version:
 
 ```bash
 npm test
@@ -30,38 +32,42 @@ npm run build
 npm run preview
 ```
 
-Las fuentes, KaTeX y los datos se incluyen en el paquete. Una vez instaladas las dependencias, el servidor local funciona sin conexión para la exposición; solo los enlaces externos a referencias requieren Internet. `npm run preview` requiere haber construido `dist/`.
+Fonts, KaTeX, and datasets are bundled. Once dependencies have been installed, the local server works without an Internet connection for the presentation; external reference links still need Internet. `npm run preview` requires a built `dist/` directory.
 
-## Convenciones y verificación
+## Conventions and verification
 
-La DFT directa usa signo negativo y no se normaliza. La inversa lleva `1/N`. La traza de etapas y la FFT usan el mismo núcleo. Las pruebas incluyen referencias independientes, Parseval, cada butterfly, tamaños compuestos, modo cero y convergencia de Poisson. También se comprueba que todas las fórmulas del contenido se rendericen con KaTeX estricto.
+The forward DFT uses the negative sign and no normalization. The inverse includes `1/N`. The stage trace and FFT share one numerical kernel. Tests use independent references and check Parseval, every displayed butterfly, composite lengths, the Poisson zero mode, and grid convergence. Mathematical content is also checked with strict KaTeX rendering.
 
-El conteo de operaciones, las cotas matemáticas y los resultados experimentales se identifican por separado. Los tiempos guardados son mediciones reales de CPU del entorno documentado; abrir el sitio no ejecuta Python. La precisión mixta/GPU se discute mediante referencias, no como reproducción propia.
+Operation counts, mathematical bounds, and observations are labeled separately. Stored timings are actual CPU measurements from the documented environment; opening a chart does not run Python. GPU and hardware mixed-precision discussions are attributed to their sources rather than presented as our own reproduction.
 
-- [Desarrollo matemático](docs/MATHEMATICS.md)
-- [Reproducir experimentos](docs/EXPERIMENTS.md)
-- [Auditoría numérica](docs/NUMERICAL_AUDIT.md)
-- [Guía para exponer](docs/LECTURE.md)
-- [Bibliografía BibTeX](docs/REFERENCES.bib)
+- [Mathematical development](docs/MATHEMATICS.md)
+- [Original experiment protocol](docs/EXPERIMENTS.md)
+- [Expanded research campaign](docs/EXTENDED_STUDY.md)
+- [Numerical audit](docs/NUMERICAL_AUDIT.md)
+- [Presenter guide](docs/LECTURE.md)
+- [BibTeX references](docs/REFERENCES.bib)
 
-## Estructura
+## Structure
 
-| Ruta | Contenido |
+| Path | Purpose |
 |---|---|
-| `src/math.ts` | DFT, FFT, traza, factorización compuesta y Poisson |
-| `src/content.ts` | Teoría, pruebas, preguntas y referencias |
-| `src/labs.ts`, `src/advanced.ts` | Visualizaciones y simulaciones |
-| `src/main.ts`, `src/style.css` | Navegación, mapa y diseño adaptable |
-| `experiments/` | Experimentos y pruebas Python independientes |
-| `public/data/` | Resultados, CSV y procedencia |
-| `tests/` | Pruebas numéricas TypeScript y composición matemática |
+| `src/math.ts` | DFT, FFT, trace, composite factorization, and Poisson |
+| `src/content.ts`, `src/proofs.ts` | Theory, derivations, discussion questions, and references |
+| `src/labs.ts`, `src/advanced.ts` | Interactive numerical laboratories |
+| `src/research.ts`, `src/charts.ts` | Six research views and interactive scientific charts |
+| `src/network.ts`, `src/proof-lens.ts` | Concept network and complete floating derivations |
+| `src/field.ts` | Procedural animated Fourier surface with reduced-motion support |
+| `src/main.ts`, `src/style.css` | Navigation and responsive visual design |
+| `experiments/` | Reproducible Python experiments and independent tests |
+| `public/data/` | Measured results, CSV tables, and provenance |
+| `tests/` | Numerical TypeScript tests and mathematical typography checks |
 
 ## GitHub Pages
 
-La configuración de Vite usa `base: '/FFTColeyTukey/'`. El workflow `.github/workflows/pages.yml` ejecuta pruebas y construcción antes del despliegue desde `main`; las pull requests se validan sin desplegar. En **Settings → Pages → Source** se utiliza **GitHub Actions**. El workflow independiente `numerics.yml` verifica Python cuando cambian los experimentos.
+Vite uses `base: '/FFTColeyTukey/'`. The workflow `.github/workflows/pages.yml` tests and builds before deploying `main`; pull requests are validated without deployment. **Settings → Pages → Source** is configured as **GitHub Actions**. The independent `numerics.yml` workflow checks Python when the experiments change.
 
-La publicación no requiere claves privadas en el código. El token temporal del workflow tiene permisos mínimos para Pages. Antes de modificar el nombre del repositorio, actualizar `base` y el enlace del sitio.
+Deployment requires no private keys in the source code. The temporary workflow token has limited Pages permissions. If the repository name changes, update both `base` and the website URL.
 
-## Alcance académico
+## Academic scope
 
-Material educativo independiente, no oficial del IMPA. Los artículos enlazados pertenecen a sus autores. Las hipótesis de las cotas de estabilidad y complejidad están explicitadas en el contenido. Un conjunto finito de pruebas no sustituye una demostración.
+This is independent educational material, not an official IMPA publication. Linked papers belong to their authors. Stability and complexity statements include their mathematical assumptions. A finite test suite does not replace a proof.
