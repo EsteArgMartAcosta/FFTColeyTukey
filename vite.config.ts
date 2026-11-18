@@ -1,2 +1,13 @@
 import { defineConfig } from 'vite';
-export default defineConfig({base: '/FFTColeyTukey/', build:{target:'es2022'},server:{host:'0.0.0.0',allowedHosts:['terminal.local']}});
+
+export default defineConfig({
+  root: 'app',
+  base: '/FFTColeyTukey/',
+  publicDir: '../public',
+  build: {
+    target: 'es2022',
+    outDir: '../dist',
+    emptyOutDir: true,
+  },
+  server: { host: '0.0.0.0', allowedHosts: ['terminal.local'] },
+});
